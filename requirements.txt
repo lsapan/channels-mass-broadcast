@@ -1,0 +1,4 @@
+django==1.11.6
+channels==1.1.8
+asgi_redis==1.4.3
+celery[redis]==4.1.0

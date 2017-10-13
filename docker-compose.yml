@@ -1,0 +1,47 @@
+version: '3.1'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: lsapan/channels-mass-broadcast
+    links:
+      - redis
+    ports:
+      - "8000:8000"
+    command: "daphne -b 0.0.0.0 -p 8000 mass.asgi:channel_layer"
+    volumes:
+      - .:/home/docker/code
+
+  worker:
+    image: lsapan/channels-mass-broadcast
+    links:
+      - redis
+    command: "python ./manage.py runworker"
+    volumes:
+      - .:/home/docker/code
+
+  celery:
+    image: lsapan/channels-mass-broadcast
+    links:
+      - redis
+    command: "celery worker -A mass --loglevel=INFO"
+    volumes:
+      - .:/home/docker/code
+    environment:
+      - C_FORCE_ROOT=true
+
+  celerybeat:
+    image: lsapan/channels-mass-broadcast
+    links:
+      - redis
+    command: "celery beat -A mass --loglevel=INFO"
+    volumes:
+      - .:/home/docker/code
+    environment:
+      - C_FORCE_ROOT=true
+
+  redis:
+    image: redis
+    restart: on-failure
